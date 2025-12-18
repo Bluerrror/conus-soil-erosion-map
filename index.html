@@ -120,7 +120,7 @@
     <div id="map"></div>
     <div id="loading" class="loading" style="display: none;">
         <div>🌍 Loading raster layer...</div>
-        <small>(Large GeoTIFF—please wait 10-30s)</small>
+        <small>(Large GeoTIFF ~285 MB—please wait 20-60s depending on connection)</small>
     </div>
     <div class="controls">
         <label for="scenario"><strong>Climate Scenario:</strong></label>
@@ -156,12 +156,12 @@
         };
         basemaps['Satellite (Default)'].addTo(map);
         L.control.layers(basemaps, null, { position: 'topleft' }).addTo(map);
-        // Absolute raw GitHub URLs to ensure LFS/large file access (bypasses potential Pages serving issues)
+        // GitHub LFS media URLs for actual binary files (bypasses pointer issue)
         const tifUrls = {
-            '2020': 'https://raw.githubusercontent.com/Bluerrror/conus-soil-erosion-map/main/2020.tif',
-            'SSP126': 'https://raw.githubusercontent.com/Bluerrror/conus-soil-erosion-map/main/SSP126.tif',
-            'SSP245': 'https://raw.githubusercontent.com/Bluerrror/conus-soil-erosion-map/main/SSP245.tif',
-            'SSP585': 'https://raw.githubusercontent.com/Bluerrror/conus-soil-erosion-map/main/SSP585.tif'
+            '2020': 'https://media.githubusercontent.com/media/Bluerrror/conus-soil-erosion-map/main/2020.tif',
+            'SSP126': 'https://media.githubusercontent.com/media/Bluerrror/conus-soil-erosion-map/main/SSP126.tif',
+            'SSP245': 'https://media.githubusercontent.com/media/Bluerrror/conus-soil-erosion-map/main/SSP245.tif',
+            'SSP585': 'https://media.githubusercontent.com/media/Bluerrror/conus-soil-erosion-map/main/SSP585.tif'
         };
         let currentLayer = null;
         // Color ramp: Vibrant green (low) to intense red (high erosion)
@@ -180,8 +180,15 @@
             status.textContent = `Loading ${scenario} scenario...`;
             try {
                 const response = await fetch(tifUrls[scenario]);
-                if (!response.ok) throw new Error(`File not found (HTTP ${response.status})`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 const arrayBuffer = await response.arrayBuffer();
+                // Basic validation: Check if buffer starts with GeoTIFF magic bytes (II* or MM*)
+                const uint8 = new Uint8Array(arrayBuffer.slice(0, 4));
+                const littleEndian = (uint8[0] === 0x49 && uint8[1] === 0x49) || (uint8[0] === 0x2A && uint8[1] === 0x00);
+                const bigEndian = (uint8[0] === 0x4D && uint8[1] === 0x4D) || (uint8[0] === 0x00 && uint8[1] === 0x2A);
+                if (!littleEndian && !bigEndian) {
+                    throw new Error('Invalid GeoTIFF format (wrong magic bytes)');
+                }
                 const georaster = await parseGeoraster(arrayBuffer);
                 currentLayer = new GeoRasterLayer({
                     georaster,
@@ -195,9 +202,9 @@
                 status.style.color = '#28a745'; // Green for success
             } catch (error) {
                 console.error(error);
-                status.textContent = `❌ Error: ${error.message}. Check file names/paths.`;
+                status.textContent = `❌ Error: ${error.message}. Verify LFS setup or try local download.`;
                 status.style.color = '#dc3545'; // Red for error
-                alert(`Failed to load ${scenario}.tif. Ensure files are in repo root.`);
+                alert(`Failed to load ${scenario}.tif (${error.message}).\n\nFiles are in repo, but large LFS binaries may need git pull locally to verify. For now, download ZIP from repo and open HTML locally.`);
             } finally {
                 loading.style.display = 'none';
             }
