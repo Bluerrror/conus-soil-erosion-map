@@ -4,111 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Soil Erosion Maps for CONUS (Zenodo 6413769)</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
     <script src="https://unpkg.com/georaster@1.3.2/dist/georaster.umd.js"></script>
     <script src="https://unpkg.com/georaster-layer-for-leaflet@3.0.0/dist/georaster-layer-for-leaflet.umd.js"></script>
     <style>
-        body { 
-            margin: 0; 
-            padding: 20px; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: linear-gradient(to bottom, #f0f8ff, #e6f3ff); 
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #f0f8ff, #e6f3ff);
         }
-        header { 
-            text-align: center; 
-            margin-bottom: 20px; 
-            color: #333; 
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
         }
         header h1 { margin: 0; font-size: 1.8em; }
         header p { margin: 5px 0; color: #666; }
-        #map { 
-            height: 70vh; 
-            width: 100%; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
-            margin-bottom: 20px; 
+        #map {
+            height: 70vh;
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
-        .info { 
-            padding: 6px 8px; 
-            font: 14px/16px Arial; 
-            background: rgba(255,255,255,0.95); 
-            box-shadow: 0 0 15px rgba(0,0,0,0.2); 
-            border-radius: 5px; 
+        .info {
+            padding: 6px 8px;
+            font: 14px/16px Arial;
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
         }
-        .legend { 
-            line-height: 18px; 
-            color: #555; 
-            background: white; 
-            padding: 15px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-            max-width: 200px; 
+        .legend {
+            line-height: 18px;
+            color: #555;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 200px;
         }
-        .legend h4 { 
-            margin: 0 0 15px; 
-            text-align: center; 
-            font-size: 14px; 
-            color: #333; 
+        .legend h4 {
+            margin: 0 0 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #333;
         }
-        .legend i { 
-            width: 20px; 
-            height: 20px; 
-            float: left; 
-            margin-right: 8px; 
-            opacity: 0.9; 
-            border-radius: 3px; 
-            border: 1px solid rgba(0,0,0,0.1); 
+        .legend i {
+            width: 20px;
+            height: 20px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.9;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.1);
         }
-        .controls { 
-            position: absolute; 
-            top: 10px; 
-            right: 10px; 
-            z-index: 1000; 
-            background: rgba(255,255,255,0.95); 
-            padding: 15px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            backdrop-filter: blur(10px); 
+        .controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
         }
-        select, input[type="range"] { 
-            margin: 8px 0; 
-            width: 100%; 
-            box-sizing: border-box; 
-            padding: 5px; 
-            border: 1px solid #ddd; 
-            border-radius: 4px; 
+        select, input[type="range"] {
+            margin: 8px 0;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
-        .loading { 
-            position: absolute; 
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%); 
-            z-index: 1001; 
-            background: rgba(255,255,255,0.95); 
-            padding: 20px; 
-            border-radius: 8px; 
-            text-align: center; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2); 
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
-        #status { 
-            font-size: 12px; 
-            color: #666; 
-            margin-top: 10px; 
-            text-align: center; 
+        #status {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
         }
-        @media (max-width: 768px) { 
-            body { padding: 10px; } 
-            #map { height: 60vh; } 
-            .controls { 
-                position: static; 
-                margin: 10px auto; 
-                width: 90%; 
-            } 
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            #map { height: 60vh; }
+            .controls {
+                position: static;
+                margin: 10px auto;
+                width: 90%;
+            }
         }
     </style>
 </head>
@@ -134,16 +134,14 @@
         <input type="range" id="opacity" min="0" max="1" step="0.1" value="0.8">
         <div id="status"></div>
     </div>
-
     <script>
-        const map = L.map('map', { 
-            center: [39.8283, -98.5795], 
+        const map = L.map('map', {
+            center: [39.8283, -98.5795],
             zoom: 5,
             zoomControl: true
         });
         const loading = document.getElementById('loading');
         const status = document.getElementById('status');
-
         // Enhanced basemaps for beauty
         const basemaps = {
             'Satellite (Default)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -158,17 +156,14 @@
         };
         basemaps['Satellite (Default)'].addTo(map);
         L.control.layers(basemaps, null, { position: 'topleft' }).addTo(map);
-
-        // Relative paths for GitHub Pages (files in same repo)
+        // Absolute raw GitHub URLs to ensure LFS/large file access (bypasses potential Pages serving issues)
         const tifUrls = {
-            '2020': './2020.tif',
-            'SSP126': './SSP126.tif',
-            'SSP245': './SSP245.tif',
-            'SSP585': './SSP585.tif'
+            '2020': 'https://raw.githubusercontent.com/Bluerrror/conus-soil-erosion-map/main/2020.tif',
+            'SSP126': 'https://raw.githubusercontent.com/Bluerrror/conus-soil-erosion-map/main/SSP126.tif',
+            'SSP245': 'https://raw.githubusercontent.com/Bluerrror/conus-soil-erosion-map/main/SSP245.tif',
+            'SSP585': 'https://raw.githubusercontent.com/Bluerrror/conus-soil-erosion-map/main/SSP585.tif'
         };
-
         let currentLayer = null;
-
         // Color ramp: Vibrant green (low) to intense red (high erosion)
         function pixelValuesToColorFn(pixelValues) {
             const val = pixelValues[0];
@@ -179,12 +174,10 @@
             const b = Math.floor(50 * (1 - normalized)); // Subtle blue for realism
             return [r, g, b, 255];
         }
-
         async function loadGeoTIFF(scenario) {
             if (currentLayer) map.removeLayer(currentLayer);
             loading.style.display = 'block';
             status.textContent = `Loading ${scenario} scenario...`;
-
             try {
                 const response = await fetch(tifUrls[scenario]);
                 if (!response.ok) throw new Error(`File not found (HTTP ${response.status})`);
@@ -209,19 +202,17 @@
                 loading.style.display = 'none';
             }
         }
-
         // Event listeners
         document.getElementById('opacity').addEventListener('input', (e) => {
             if (currentLayer) currentLayer.setOpacity(e.target.value);
             document.getElementById('opacity-value').textContent = e.target.value;
         });
         document.getElementById('scenario').addEventListener('change', (e) => loadGeoTIFF(e.target.value));
-
         // Polished legend
         const legend = L.control({ position: 'bottomright' });
         legend.onAdd = () => {
             const div = L.DomUtil.create('div', 'info legend');
-            div.innerHTML = 
+            div.innerHTML =
                 '<h4>Legend: Erosion Rates<br><small>(Mg ha⁻¹ yr⁻¹)</small></h4>' +
                 '<i style="background:linear-gradient(to right, #00ff88, #88ff00)"></i> 0–5 (Low)<br>' +
                 '<i style="background:#ffff00"></i> 5–10 (Moderate)<br>' +
@@ -231,14 +222,11 @@
             return div;
         };
         legend.addTo(map);
-
         // US-scale scale bar
         L.control.scale({ metric: false, imperial: 'mi' }).addTo(map);
-
         // Attribution with link
         map.attributionControl.setPrefix('Map powered by Leaflet | ');
         map.attributionControl.addAttribution('<a href="https://zenodo.org/records/6413769" target="_blank">Zenodo Soil Erosion Data</a>');
-
         // Auto-load initial layer
         loadGeoTIFF('2020');
     </script>
